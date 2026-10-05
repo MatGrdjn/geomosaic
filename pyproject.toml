@@ -1,0 +1,18 @@
+[project]
+name = "png2svg"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pillow>=12.3.0",
+]
+
+[dependency-groups]
+dev = [
+    "marimo>=0.25.1",
+    "matplotlib>=3.11.2",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.16.10",
+]
