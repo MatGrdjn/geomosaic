@@ -1086,6 +1086,7 @@ name = "png2svg"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "numpy" },
     { name = "pillow" },
 ]
 
@@ -1099,7 +1100,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pillow", specifier = ">=12.3.0" }]
+requires-dist = [
+    { name = "numpy", specifier = ">=2.5.3" },
+    { name = "pillow", specifier = ">=12.3.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [
