@@ -23,13 +23,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.ruff]
-# Exclure le dossier notebooks du formatage et du linting
 extend-exclude = ["notebooks"]
 
 [tool.mypy]
-# Si tu utilises la configuration mypy ici, tu peux explicitement l'exclure (bien que ta commande CI cible déjà uniquement "src")
 exclude = ["^notebooks/"]
-
-[tool.pytest.ini_options]
-# Restreindre la recherche des tests au dossier tests/ pour éviter de scanner tout le projet
-testpaths = ["tests"]

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Hexagon:
     def __init__(self, cx: float, cy: float, size: float):
         self.cx = cx
