@@ -47,7 +47,7 @@ def _(np):
             self.size = size
 
             self.edges = self._compute_edges()
-    
+
         @property
         def height(self):
             return np.sqrt(3) * self.size
@@ -59,7 +59,7 @@ def _(np):
         @property
         def centre(self):
             return (self.cx, self.cy)
-    
+
 
         def _compute_edges(self):
 
@@ -94,7 +94,7 @@ def _(Hexagon, np):
             y_offset = y_spacing / 2 if (col % 2 == 1) else 0
 
             for row in range(rows):
-            
+        
                 cx = col * x_spacing
                 cy = row * y_spacing + y_offset
 

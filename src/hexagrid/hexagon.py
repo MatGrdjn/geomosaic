@@ -33,3 +33,27 @@ class Hexagon:
             edges.append([px, py])
 
         return edges
+
+
+def generate_hexagonal_grid(width: int, height: int, size: int, margin: int = 2) -> list[Hexagon]:
+
+    x_spacing = 1.5 * size
+    y_spacing = np.sqrt(3) * size
+
+    cols = int(width / x_spacing) + margin
+    rows = int(height / y_spacing) + margin
+
+    hexagon_grid = []
+
+    for col in range(cols):
+
+        y_offset = y_spacing / 2 if (col % 2 == 1) else 0
+
+        for row in range(rows):
+        
+            cx = col * x_spacing
+            cy = row * y_spacing + y_offset
+
+            hexagon_grid.append(Hexagon(cx, cy, size))
+
+    return hexagon_grid
