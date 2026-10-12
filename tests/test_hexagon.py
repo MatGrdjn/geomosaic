@@ -60,7 +60,7 @@ def test_grid_column_offset():
 
     hex_col_0 = grid[0]
     assert hex_col_0.cx == pytest.approx(0.0)
-    assert hex_col_0.cy == pytest.approx(0.0)
+    assert hex_col_0.cy == pytest.approx(0.0)   
 
     x_spacing = 1.5 * size
     hex_col_1 = next(h for h in grid if np.isclose(h.cx, x_spacing))
