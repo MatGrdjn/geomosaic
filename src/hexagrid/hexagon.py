@@ -8,7 +8,7 @@ class Hexagon:
         self.size = size
 
         self.edges = self._compute_edges()
-    
+
     @property
     def height(self):
         return np.sqrt(3) * self.size
@@ -20,7 +20,6 @@ class Hexagon:
     @property
     def centre(self):
         return (self.cx, self.cy)
-    
 
     def _compute_edges(self):
 
@@ -36,7 +35,9 @@ class Hexagon:
         return edges
 
 
-def generate_hexagonal_grid(width: int, height: int, size: int, margin: int = 2) -> list[Hexagon]:
+def generate_hexagonal_grid(
+    width: int, height: int, size: int, margin: int = 2
+) -> list[Hexagon]:
 
     x_spacing = 1.5 * size
     y_spacing = np.sqrt(3) * size
@@ -47,11 +48,9 @@ def generate_hexagonal_grid(width: int, height: int, size: int, margin: int = 2)
     hexagon_grid = []
 
     for col in range(cols):
-
         y_offset = y_spacing / 2 if (col % 2 == 1) else 0
 
         for row in range(rows):
-        
             cx = col * x_spacing
             cy = row * y_spacing + y_offset
 
