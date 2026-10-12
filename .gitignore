@@ -9,3 +9,10 @@ wheels/
 
 # Virtual environments
 .venv
+.python-version
+
+.ruff_cache
+
+.coverage
+coverage.xml
+htmlcov/
