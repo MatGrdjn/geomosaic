@@ -1,8 +1,10 @@
+from typing import ClassVar
+
 import numpy as np
 
 
 class Hexagon:
-    _base_offsets: dict[float, np.ndarray] = {}
+    _base_offsets: ClassVar[dict[float, np.ndarray]] = {}
 
     def __init__(self, cx: float, cy: float, size: float):
         self.cx = cx
