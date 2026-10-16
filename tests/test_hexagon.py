@@ -69,3 +69,26 @@ def test_grid_column_offset():
     hex_col_1 = next(h for h in grid if np.isclose(h.cx, x_spacing))
 
     assert hex_col_1.cy == pytest.approx(expected_offset)
+
+
+def test_hexagon_contains_point():
+    h = Hexagon(cx=10, cy=10, size=10)
+
+    assert h.contains_point(10, 10) is True
+
+    assert h.contains_point(12, 12) is True
+
+    assert h.contains_point(10, 10 + h.height) is False
+
+    assert h.contains_point(10 + h.size * 2, 10) is False
+
+
+def test_compute_average_color_random():
+    h = Hexagon(cx=5, cy=5, size=4)
+
+    img_arr = np.zeros((10, 10, 3), dtype=int)
+    img_arr[:, :] = [255, 0, 0]  # image rouge
+
+    h.compute_average_color_random(img_arr)
+
+    assert h.color == (255, 0, 0)
