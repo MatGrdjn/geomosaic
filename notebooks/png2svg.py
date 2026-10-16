@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.2"
+__generated_with = "0.25.1"
 app = marimo.App()
 
 
@@ -11,21 +11,25 @@ def _():
     import numpy as np
 
     from dataclasses import dataclass
+    from hexagrid.hexagon import generate_hexagonal_grid, Hexagon
+    from matplotlib.patches import Polygon
     from PIL import Image
 
-    return Image, mo, np, plt
+    return Image, Polygon, generate_hexagonal_grid, mo, np, plt
 
 
 @app.cell
-def _(Image):
-    image = Image.open("../input/screenshot.jpg")
-    return (image,)
+def _(Image, np):
+    img_path = "../input/screenshot.jpg"
+    img = Image.open(img_path).convert("RGB")
+    img_array = np.array(img)
+    return img, img_array
 
 
 @app.cell
-def _(image, plt):
+def _(img, plt):
     figure, ax = plt.subplots(1, 1, figsize=(16, 12))
-    ax.imshow(image)
+    ax.imshow(img)
     ax.axis(False)
 
     plt.show()
@@ -33,82 +37,40 @@ def _(image, plt):
 
 
 @app.cell
-def _(image, np):
-    img = np.array(image)
-    return
-
-
-@app.cell
-def _(np):
-    class Hexagon:
-        def __init__(self, cx: int | float, cy: int | float, size: int | float):
-            self.cx = cx
-            self.cy = cy
-            self.size = size
-
-            self.edges = self._compute_edges()
-
-        @property
-        def height(self):
-            return np.sqrt(3) * self.size
-
-        @property
-        def width(self):
-            return 2 * self.size
-
-        @property
-        def centre(self):
-            return (self.cx, self.cy)
-
-
-        def _compute_edges(self):
-
-            edges = []
-            for i in range(6):
-                angle_rad = np.radians(60 * i)
-
-                px = self.size * np.cos(angle_rad) + self.cx
-                py = self.size * np.sin(angle_rad) + self.cy
-
-                edges.append([px, py])
-
-            return edges
-
-    return (Hexagon,)
-
-
-@app.cell
-def _(Hexagon, np):
-    def generate_hexagonal_grid(width: int, height: int, size: int, margin: int = 2) -> list[Hexagon]:
-
-        x_spacing = 1.5 * size
-        y_spacing = np.sqrt(3) * size
-
-        cols = int(width / x_spacing) + margin
-        rows = int(height / y_spacing) + margin
-
-        hexagon_grid = []
-
-        for col in range(cols):
-
-            y_offset = y_spacing / 2 if (col % 2 == 1) else 0
-
-            for row in range(rows):
-        
-                cx = col * x_spacing
-                cy = row * y_spacing + y_offset
-
-                hexagon_grid.append(Hexagon(cx, cy, size))
-
-        return hexagon_grid
-
-    return
-
-
-@app.cell
 def _(mo):
-    slider = mo.ui.slider(start=1, stop=20, step=1, value=1, label="size", show_value=True)
+    slider = mo.ui.slider(1, 30, 1, 15, label="hex_size")
     slider
+    return (slider,)
+
+
+@app.cell
+def _(Polygon, generate_hexagonal_grid, img, img_array, plt, slider):
+    hex_size = int(slider.value)
+    grid = generate_hexagonal_grid(width=img.width, height=img.height, size=hex_size)
+
+    for h in grid:
+        h.compute_average_color_random(img_array) 
+
+    fig, axes = plt.subplots(figsize=(16, 12))
+    axes.set_xlim(0, img.width)
+    axes.set_ylim(img.height, 0) 
+    axes.set_aspect('equal')
+    axes.axis('off') 
+
+    for h in grid:
+        if h.color != (0, 0, 0): 
+            color_norm = (h.color[0]/255, h.color[1]/255, h.color[2]/255)
+        
+            poly = Polygon(
+                h.edges, 
+                closed=True, 
+                facecolor=color_norm, 
+                edgecolor="white",
+                linewidth=0.1
+            )
+            axes.add_patch(poly)
+
+    plt.show()
     return
 
 
