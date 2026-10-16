@@ -2,6 +2,8 @@ import numpy as np
 
 
 class Hexagon:
+    _base_offsets: dict[float, np.ndarray] = {}
+
     def __init__(self, cx: float, cy: float, size: float):
         self.cx = cx
         self.cy = cy
@@ -22,23 +24,22 @@ class Hexagon:
     def centre(self):
         return (self.cx, self.cy)
 
-    def _compute_edges(self):
-        """Compute the coordinates of the edges of the hexagon
+    def _compute_edges(self) -> np.ndarray:
+        """Compute the coordinates of the edges of one hexagon and translate them for the other ones.
 
         Returns:
-            list[list[float, float]]: The list of the coordinates of the edges
+            np.ndarray: An array of shape (6, 2) containing the (x, y) coordinates of the edges.
         """
+        if self.size not in self.__class__._base_offsets:
+            angles_rad = np.radians(60 * np.arange(6))
 
-        edges = []
-        for i in range(6):
-            angle_rad = np.radians(60 * i)
+            dx = self.size * np.cos(angles_rad)
+            dy = self.size * np.sin(angles_rad)
 
-            px = self.size * np.cos(angle_rad) + self.cx
-            py = self.size * np.sin(angle_rad) + self.cy
+            self.__class__._base_offsets[self.size] = np.column_stack((dx, dy))
 
-            edges.append([px, py])
-
-        return edges
+        offsets = self.__class__._base_offsets[self.size]
+        return offsets + [self.cx, self.cy]
 
     def contains_point(self, px: float, py: float) -> bool:
         """Check if a point is in the hexagon.
