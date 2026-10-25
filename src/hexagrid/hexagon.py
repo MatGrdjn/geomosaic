@@ -106,14 +106,14 @@ class Hexagon:
 
 
 def generate_hexagonal_grid(
-    width: int, height: int, size: int, margin: int = 2
+    width: int, height: int, size: float, margin: int = 2
 ) -> list[Hexagon]:
     """Generate a flat-top hexagonal grid from a classic square grid.
 
     Args:
         width (int): width of the square grid.
         height (int): height of the square grid.
-        size (int): size of the flat-top hexagon (radius of the outer circle).
+        size (float): size of the flat-top hexagon (radius of the outer circle).
         margin (int, optional):  Number of additional rows and columns
         added to the grid dimensions. Defaults to 2.
 
