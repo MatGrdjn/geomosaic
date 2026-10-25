@@ -35,3 +35,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hexagrid"]
+
+[project.scripts]
+png2svg = "hexagrid.cli:main"
