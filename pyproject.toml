@@ -1,6 +1,6 @@
 [project]
 name = "geomosaic" 
-version = "0.1.1"
+version = "0.1.3"
 description = "A Python CLI tool to convert images into hexagonal SVG mosaics"
 readme = "README.md"
 requires-python = ">=3.12"
