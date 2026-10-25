@@ -1,9 +1,19 @@
 [project]
-name = "png2svg"
+name = "geomosaic" 
 version = "0.1.0"
-description = "Add your description here"
+description = "A Python CLI tool to convert images into hexagonal SVG mosaics"
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "GRANDJEAN Mathieu", email = "mathieu.grandjean@etu.imt-nord-europe.fr" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Multimedia :: Graphics",
+]
 dependencies = [
     "numpy>=2.5.3",
     "pillow>=12.3.0",
@@ -37,4 +47,4 @@ build-backend = "hatchling.build"
 packages = ["src/hexagrid"]
 
 [project.scripts]
-png2svg = "hexagrid.cli:main"
+geomosaic = "hexagrid.cli:main"
