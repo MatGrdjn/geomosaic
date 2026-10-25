@@ -12,10 +12,11 @@ def _():
 
     from dataclasses import dataclass
     from hexagrid.hexagon import generate_hexagonal_grid, Hexagon
+    from hexagrid.svg import export_to_svg
     from matplotlib.patches import Polygon
     from PIL import Image
 
-    return Image, Polygon, generate_hexagonal_grid, mo, np, plt
+    return Image, Polygon, export_to_svg, generate_hexagonal_grid, mo, np, plt
 
 
 @app.cell
@@ -38,7 +39,7 @@ def _(img, plt):
 
 @app.cell
 def _(mo):
-    slider = mo.ui.slider(1, 30, 1, 15, label="hex_size")
+    slider = mo.ui.slider(5, 30, 1, 15, label="hex_size")
     slider
     return (slider,)
 
@@ -60,7 +61,7 @@ def _(Polygon, generate_hexagonal_grid, img, img_array, plt, slider):
     for h in grid:
         if h.color != (0, 0, 0): 
             color_norm = (h.color[0]/255, h.color[1]/255, h.color[2]/255)
-        
+
             poly = Polygon(
                 h.edges, 
                 closed=True, 
@@ -71,6 +72,13 @@ def _(Polygon, generate_hexagonal_grid, img, img_array, plt, slider):
             axes.add_patch(poly)
 
     plt.show()
+    return (grid,)
+
+
+@app.cell
+def _(export_to_svg, grid, img):
+    export_to_svg(grid, img.width, img.height, "../output/example.svg")
+    print("Done")
     return
 
 
