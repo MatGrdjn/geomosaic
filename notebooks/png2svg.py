@@ -6,79 +6,101 @@ app = marimo.App()
 
 @app.cell
 def _():
+    import io
     import marimo as mo
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from dataclasses import dataclass
     from hexagrid.hexagon import generate_hexagonal_grid, Hexagon
     from hexagrid.svg import export_to_svg
-    from matplotlib.patches import Polygon
     from PIL import Image
 
-    return Image, Polygon, export_to_svg, generate_hexagonal_grid, mo, np, plt
+    return Image, export_to_svg, generate_hexagonal_grid, io, mo, np
 
 
-@app.cell
-def _(Image, np):
-    img_path = "../input/screenshot.jpg"
-    img = Image.open(img_path).convert("RGB")
-    img_array = np.array(img)
-    return img, img_array
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Hexagrid : Convert an image (.png, .jpg, etc.) into a SVG mosaic
 
-
-@app.cell
-def _(img, plt):
-    figure, ax = plt.subplots(1, 1, figsize=(16, 12))
-    ax.imshow(img)
-    ax.axis(False)
-
-    plt.show()
+    Drag and drop an image and adjust parameters to generate the vectorized mosaic.
+    """)
     return
 
 
 @app.cell
 def _(mo):
-    slider = mo.ui.slider(5, 30, 1, 15, label="hex_size")
-    slider
-    return (slider,)
+    file_picker = mo.ui.file(
+        filetypes=[".png", ".jpg", ".jpeg", ".webp"],
+        label="Choose an image to convert"
+    )
+
+    size_input = mo.ui.number(
+        start=1.0, stop=100.0, step=1.0, value=15.0,
+        label="Size of the hexagons (flat-top)"
+    )
+
+    margin_input = mo.ui.number(
+        start=0, stop=10, step=1, value=2,
+        label="Grid margin"
+    )
+
+    mo.vstack([file_picker, size_input, margin_input])
+    return file_picker, margin_input, size_input
 
 
 @app.cell
-def _(Polygon, generate_hexagonal_grid, img, img_array, plt, slider):
-    hex_size = int(slider.value)
-    grid = generate_hexagonal_grid(width=img.width, height=img.height, size=hex_size)
+def _(
+    Image,
+    export_to_svg,
+    file_picker,
+    generate_hexagonal_grid,
+    io,
+    margin_input,
+    mo,
+    np,
+    size_input,
+):
+    if file_picker.value:
+        uploaded_file = file_picker.value[0]
 
-    for h in grid:
-        h.compute_average_color_random(img_array) 
+        img = Image.open(io.BytesIO(uploaded_file.contents)).convert("RGB")
 
-    fig, axes = plt.subplots(figsize=(16, 12))
-    axes.set_xlim(0, img.width)
-    axes.set_ylim(img.height, 0) 
-    axes.set_aspect('equal')
-    axes.axis('off') 
+        hex_grid = generate_hexagonal_grid(
+                img.width, img.height, 
+                size_input.value, 
+                margin=int(margin_input.value)
+        )
 
-    for h in grid:
-        if h.color != (0, 0, 0): 
-            color_norm = (h.color[0]/255, h.color[1]/255, h.color[2]/255)
+        for h in hex_grid:
+            h.compute_average_color_random(np.asarray(img))
+    
+        output_filename = f"output_{uploaded_file.name.rsplit('.', 1)[0]}.svg"
+        export_to_svg(hex_grid, img.width, img.height, output_filename)
 
-            poly = Polygon(
-                h.edges, 
-                closed=True, 
-                facecolor=color_norm, 
-                edgecolor="white",
-                linewidth=0.1
-            )
-            axes.add_patch(poly)
+        result = mo.hstack([
+                mo.vstack([
+                    mo.md("**Original Image**"),
+                    mo.image(src=uploaded_file.contents, width=500)
+                ]),
+                mo.vstack([
+                    mo.md("**SVG Mosaic**"),
+                    mo.image(src=f"output_{uploaded_file.name.rsplit('.', 1)[0]}.svg", width=500)
+                ]),
+                mo.vstack([
+                    mo.md("**Result**"),
+                    mo.md(f"""
+                    * **Generated file:** `{output_filename}`
+                    * **Hexagons size:** {size_input.value}
+                    * **Hexagon number:** {len(hex_grid)}
+                    """)
+                ])
+        ])
 
-    plt.show()
-    return (grid,)
+    else:
+        result = mo.md("### Please select an image to start the conversion.")
 
-
-@app.cell
-def _(export_to_svg, grid, img):
-    export_to_svg(grid, img.width, img.height, "../output/example.svg")
-    print("Done")
+    result
     return
 
 
