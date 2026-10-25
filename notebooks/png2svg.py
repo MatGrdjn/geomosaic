@@ -1,7 +1,17 @@
+# /// script
+# dependencies = [
+#     "geomosaic",
+#     "marimo>=0.25.2",
+#     "matplotlib==3.11.2",
+#     "numpy",
+#     "pillow",
+# ]
+# ///
+
 import marimo
 
 __generated_with = "0.25.1"
-app = marimo.App()
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -74,7 +84,7 @@ def _(
 
         for h in hex_grid:
             h.compute_average_color_random(np.asarray(img))
-    
+
         output_filename = f"output_{uploaded_file.name.rsplit('.', 1)[0]}.svg"
         export_to_svg(hex_grid, img.width, img.height, output_filename)
 
