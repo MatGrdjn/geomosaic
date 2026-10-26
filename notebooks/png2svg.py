@@ -1,6 +1,6 @@
 # /// script
 # dependencies = [
-#     "geomosaic==0.1.3",
+#     "geomosaic==0.1.4",
 #     "marimo>=0.25.1",
 #     "matplotlib==3.11.2",
 #     "numpy",
@@ -55,8 +55,31 @@ def _(mo):
         label="Grid margin"
     )
 
-    mo.vstack([file_picker, size_input, margin_input])
-    return file_picker, margin_input, size_input
+    method_picker = mo.ui.dropdown(
+        options=["deterministic", "random"],
+        value="deterministic",
+        label="Color sampling method"
+    )
+
+    step_slider = mo.ui.slider(
+        start=1, stop=5, step=1, value=2,
+        label="Grid step (Deterministic color sampling)"
+    )
+
+    fraction_slider = mo.ui.slider(
+        start=0.05, stop=1.0, step=0.05, value=0.2,
+        label="Color sampling fraction (Random color sampling)"
+    )
+
+    mo.vstack([file_picker, size_input, margin_input, method_picker, step_slider, fraction_slider])
+    return (
+        file_picker,
+        fraction_slider,
+        margin_input,
+        method_picker,
+        size_input,
+        step_slider,
+    )
 
 
 @app.cell
@@ -64,12 +87,15 @@ def _(
     Image,
     export_to_svg,
     file_picker,
+    fraction_slider,
     generate_hexagonal_grid,
     io,
     margin_input,
+    method_picker,
     mo,
     np,
     size_input,
+    step_slider,
 ):
     if file_picker.value:
         uploaded_file = file_picker.value[0]
@@ -83,7 +109,7 @@ def _(
         )
 
         for h in hex_grid:
-            h.compute_average_color_random(np.asarray(img))
+            h.compute_color(np.asarray(img), method=method_picker.value, step=int(step_slider.value), sample_fraction=fraction_slider.value)
 
         output_filename = f"output_{uploaded_file.name.rsplit('.', 1)[0]}.svg"
         export_to_svg(hex_grid, img.width, img.height, output_filename)

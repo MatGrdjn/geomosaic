@@ -61,8 +61,12 @@ class Hexagon:
 
         return bool((np.sqrt(3) * relative_x + relative_y) <= (np.sqrt(3) * self.size))
 
-    def compute_average_color_random(
-        self, img_arr: np.ndarray, sample_fraction: float = 0.2, max_samples: int = 50
+    def _compute_average_color_random(
+        self,
+        img_arr: np.ndarray,
+        sample_fraction: float = 0.2,
+        max_samples: int = 50,
+        **kwargs,
     ) -> None:
         """Compute the average color of the hexagon by randomly drawing pixels.
 
@@ -103,6 +107,61 @@ class Hexagon:
             self.color = tuple(np.round(color_sum / valid_points).astype(int))
         else:
             self.color = (0, 0, 0)
+
+    def _compute_average_color_deterministic(
+        self, img_arr: np.ndarray, step: int = 2, **kwargs
+    ) -> None:
+        """Compute the average color of the hexagon deterministically
+        by scanning a regular pixel grid within its bounding box.
+
+        Args:
+            img_arr (np.ndarray): The image converted in a numpy array, (H, W, C).
+            step (int, optional): Step size for the grid scan. Defaults to 2.
+        """
+        img_height, img_width = img_arr.shape[:2]
+
+        x_min = int(max(0, np.floor(self.cx - self.size)))
+        x_max = int(min(img_width, np.ceil(self.cx + self.size)))
+        y_min = int(max(0, np.floor(self.cy - self.height / 2)))
+        y_max = int(min(img_height, np.ceil(self.cy + self.height / 2)))
+
+        color_sum = np.zeros(3, dtype=float)
+        valid_points = 0
+
+        for py in range(y_min, y_max, step):
+            for px in range(x_min, x_max, step):
+                if self.contains_point(float(px), float(py)):
+                    color_sum += img_arr[py, px]
+                    valid_points += 1
+
+        if valid_points > 0:
+            self.color = tuple(np.round(color_sum / valid_points).astype(int))
+        else:
+            cx_int, cy_int = int(self.cx), int(self.cy)
+            if 0 <= cx_int < img_width and 0 <= cy_int < img_height:
+                self.color = tuple(img_arr[cy_int, cx_int])
+            else:
+                self.color = (0, 0, 0)
+
+    def compute_color(
+        self, img_arr: np.ndarray, method: str = "deterministic", **kwargs
+    ):
+        """Compute the hexagon color using the specified method.
+
+        Args:
+            img_arr (np.ndarray): The image converted in a numpy array, (H, W, C).
+            method (str, optional): "deterministic" or "random". Defaults to "deterministic".
+            **kwargs: Additional parameters specific to each method.
+        """
+
+        if method == "deterministic":
+            self._compute_average_color_deterministic(img_arr, **kwargs)
+        elif method == "random":
+            self._compute_average_color_random(img_arr, **kwargs)
+        else:
+            raise ValueError(
+                f"Unknown sampling method: '{method}'. Use 'deterministic' or 'random'."
+            )
 
 
 def generate_hexagonal_grid(

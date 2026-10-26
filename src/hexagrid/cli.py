@@ -45,6 +45,28 @@ def parse_arguments() -> argparse.Namespace:
         "-v", "--verbose", action="store_true", help="Enable verbose ouput."
     )
 
+    parser.add_argument(
+        "--color-sampling",
+        type=str,
+        choices=["deterministic", "random"],
+        default="deterministic",
+        help="Color sampling method.",
+    )
+
+    parser.add_argument(
+        "--step",
+        type=int,
+        default=2,
+        help="Grid step size for determinsitic color sampling.",
+    )
+
+    parser.add_argument(
+        "--sample-fraction",
+        type=float,
+        default=0.2,
+        help="Sample fraction for random color sampling.",
+    )
+
     return parser.parse_args()
 
 
@@ -100,7 +122,12 @@ def main() -> None:
         img.width, img.height, args.size, margin=args.margin
     )
     for h in hex_grid:
-        h.compute_average_color_random(np.asarray(img))
+        h.compute_color(
+            np.asarray(img),
+            method=args.color_sampling,
+            step=args.step,
+            sample_fraction=args.sample_fraction,
+        )
 
     if verbose:
         print("Exporting to SVG format...")
