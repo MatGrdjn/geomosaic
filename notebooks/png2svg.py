@@ -1,6 +1,6 @@
 # /// script
 # dependencies = [
-#     "geomosaic==0.1.4",
+#     "geomosaic==0.2.0",
 #     "marimo>=0.25.1",
 #     "matplotlib==3.11.2",
 #     "numpy",
