@@ -70,8 +70,8 @@ def test_hexagon_edges(flat_hexagon):
     assert flat_hexagon.edges[0][0] == pytest.approx(2.0)
     assert flat_hexagon.edges[0][1] == pytest.approx(0.0)
 
-    expected_x = 1.0    # size / 2
-    expected_y = np.sqrt(3)     # (sqrt(3) / 2) * size
+    expected_x = 1.0  # size / 2
+    expected_y = np.sqrt(3)  # (sqrt(3) / 2) * size
     assert flat_hexagon.edges[1][0] == pytest.approx(expected_x)
     assert flat_hexagon.edges[1][1] == pytest.approx(expected_y)
 
@@ -80,8 +80,8 @@ def test_hexagon_edges_pointy(pointy_hexagon):
     assert len(pointy_hexagon.edges) == 6
     assert len(pointy_hexagon.edges[0]) == 2
 
-    expected_x = np.sqrt(3)     # (sqrt(3) / 2) * size
-    expected_y = 1.0    # size / 2
+    expected_x = np.sqrt(3)  # (sqrt(3) / 2) * size
+    expected_y = 1.0  # size / 2
     assert pointy_hexagon.edges[0][0] == pytest.approx(expected_x)
     assert pointy_hexagon.edges[0][1] == pytest.approx(expected_y)
 

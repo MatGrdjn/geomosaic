@@ -24,7 +24,8 @@ def test_parse_arguments(monkeypatch):
             "4",
             "--sample-fraction",
             "0.3",
-            "--orientation", "pointy"
+            "--orientation",
+            "pointy",
         ],
     )
 

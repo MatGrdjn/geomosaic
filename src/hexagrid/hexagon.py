@@ -8,10 +8,14 @@ Orientation = Literal["flat", "pointy"]
 class Hexagon:
     _base_offsets: ClassVar[dict[tuple[float, Orientation], np.ndarray]] = {}
 
-    def __init__(self, cx: float, cy: float, size: float, orientation: Orientation = "flat"):
+    def __init__(
+        self, cx: float, cy: float, size: float, orientation: Orientation = "flat"
+    ):
 
-        if orientation not in get_args(Orientation) :
-            raise ValueError(f"orientation must be 'flat' or 'pointy', received {orientation}.")
+        if orientation not in get_args(Orientation):
+            raise ValueError(
+                f"orientation must be 'flat' or 'pointy', received {orientation}."
+            )
 
         self.cx = cx
         self.cy = cy
@@ -61,7 +65,6 @@ class Hexagon:
         offsets = self.__class__._base_offsets[key]
         return offsets + [self.cx, self.cy]
 
-
     def contains_point(self, px: float, py: float) -> bool:
         """Check if a point is in the hexagon.
 
@@ -82,7 +85,6 @@ class Hexagon:
             return False
 
         return bool((np.sqrt(3) * relative_x + relative_y) <= (np.sqrt(3) * self.size))
-
 
     def _compute_average_color_random(
         self,
@@ -188,7 +190,11 @@ class Hexagon:
 
 
 def generate_hexagonal_grid(
-    width: int, height: int, size: float, margin: int = 2,orientation: Orientation = "flat"
+    width: int,
+    height: int,
+    size: float,
+    margin: int = 2,
+    orientation: Orientation = "flat",
 ) -> list[Hexagon]:
     """Generate an hexagonal (flat-top or pointy-top) grid from a classic square grid.
 
