@@ -8,7 +8,23 @@ from hexagrid.cli import main, parse_arguments
 
 def test_parse_arguments(monkeypatch):
     monkeypatch.setattr(
-        sys, "argv", ["png2svg", "image.png", "-s", "20", "-m", "3", "-v"]
+        sys,
+        "argv",
+        [
+            "png2svg",
+            "image.png",
+            "-s",
+            "20",
+            "-m",
+            "3",
+            "-v",
+            "--color-sampling",
+            "random",
+            "--step",
+            "4",
+            "--sample-fraction",
+            "0.3",
+        ],
     )
 
     args = parse_arguments()
@@ -18,6 +34,9 @@ def test_parse_arguments(monkeypatch):
     assert args.size == 20.0
     assert args.margin == 3
     assert args.verbose is True
+    assert args.color_sampling == "random"
+    assert args.step == 4
+    assert args.sample_fraction == 0.3
 
 
 def test_main_execution(tmp_path, monkeypatch):
