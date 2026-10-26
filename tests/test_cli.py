@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from hexagrid.cli import main, parse_arguments
+from geomosaic.cli import main, parse_arguments
 
 
 def test_parse_arguments(monkeypatch):

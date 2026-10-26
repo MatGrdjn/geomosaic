@@ -5,8 +5,8 @@ from typing import get_args
 import numpy as np
 from PIL import Image
 
-from hexagrid.hexagon import Orientation, generate_hexagonal_grid
-from hexagrid.svg import export_to_svg
+from geomosaic.hexagrid.hexagon import Orientation, generate_hexagonal_grid
+from geomosaic.svg import export_to_svg
 
 
 def parse_arguments() -> argparse.Namespace:
