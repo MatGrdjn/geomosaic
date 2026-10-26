@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from hexagrid.hexagon import Hexagon
+from geomosaic.hexagrid.hexagon import Hexagon
 
 
 def export_to_svg(

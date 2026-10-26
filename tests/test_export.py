@@ -1,5 +1,5 @@
-from hexagrid.hexagon import Hexagon
-from hexagrid.svg import export_to_svg
+from geomosaic.hexagrid.hexagon import Hexagon
+from geomosaic.svg import export_to_svg
 
 
 def test_export_to_svg(tmp_path):

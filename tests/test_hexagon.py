@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from hexagrid.hexagon import Hexagon, generate_hexagonal_grid
+from geomosaic.hexagrid.hexagon import Hexagon, generate_hexagonal_grid
 
 ORIENTATIONS = ["flat", "pointy"]
 
