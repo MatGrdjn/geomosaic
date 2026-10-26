@@ -1,10 +1,11 @@
 import argparse
 from pathlib import Path
+from typing import get_args
 
 import numpy as np
 from PIL import Image
 
-from hexagrid.hexagon import generate_hexagonal_grid
+from hexagrid.hexagon import Orientation, generate_hexagonal_grid
 from hexagrid.svg import export_to_svg
 
 
@@ -67,6 +68,14 @@ def parse_arguments() -> argparse.Namespace:
         help="Sample fraction for random color sampling.",
     )
 
+    parser.add_argument(
+        "--orientation",
+        type=str,
+        choices=get_args(Orientation),
+        default="flat",
+        help="Orientation of the hexagons: flat-top or pointy-top (default: 'flat')",
+    )
+
     return parser.parse_args()
 
 
@@ -117,9 +126,13 @@ def main() -> None:
     img = Image.open(args.input).convert("RGB")
 
     if verbose:
-        print("Generating hexagonal grid...")
+        print(f"Generating hexagonal grid ({args.orientation}-top)...")
     hex_grid = generate_hexagonal_grid(
-        img.width, img.height, args.size, margin=args.margin
+        img.width,
+        img.height,
+        args.size,
+        margin=args.margin,
+        orientation=args.orientation,
     )
     for h in hex_grid:
         h.compute_color(

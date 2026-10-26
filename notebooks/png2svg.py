@@ -1,6 +1,6 @@
 # /// script
 # dependencies = [
-#     "geomosaic==0.1.4",
+#     "geomosaic==0.2.0",
 #     "marimo>=0.25.1",
 #     "matplotlib==3.11.2",
 #     "numpy",
@@ -45,6 +45,12 @@ def _(mo):
         label="Choose an image to convert"
     )
 
+    orientation_picker = mo.ui.dropdown(
+        options=["flat", "pointy"],
+        value="flat",
+        label="Hexagon orientation"
+    )
+
     size_input = mo.ui.number(
         start=1.0, stop=100.0, step=1.0, value=15.0,
         label="Size of the hexagons (flat-top)"
@@ -71,12 +77,13 @@ def _(mo):
         label="Color sampling fraction (Random color sampling)"
     )
 
-    mo.vstack([file_picker, size_input, margin_input, method_picker, step_slider, fraction_slider])
+    mo.vstack([file_picker, orientation_picker, size_input, margin_input, method_picker, step_slider, fraction_slider])
     return (
         file_picker,
         fraction_slider,
         margin_input,
         method_picker,
+        orientation_picker,
         size_input,
         step_slider,
     )
@@ -94,6 +101,7 @@ def _(
     method_picker,
     mo,
     np,
+    orientation_picker,
     size_input,
     step_slider,
 ):
@@ -105,7 +113,8 @@ def _(
         hex_grid = generate_hexagonal_grid(
                 img.width, img.height, 
                 size_input.value, 
-                margin=int(margin_input.value)
+                margin=int(margin_input.value),
+                orientation=orientation_picker.value
         )
 
         for h in hex_grid:

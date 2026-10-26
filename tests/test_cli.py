@@ -24,6 +24,8 @@ def test_parse_arguments(monkeypatch):
             "4",
             "--sample-fraction",
             "0.3",
+            "--orientation",
+            "pointy",
         ],
     )
 
@@ -37,6 +39,7 @@ def test_parse_arguments(monkeypatch):
     assert args.color_sampling == "random"
     assert args.step == 4
     assert args.sample_fraction == 0.3
+    assert args.orientation == "pointy"
 
 
 def test_main_execution(tmp_path, monkeypatch):
