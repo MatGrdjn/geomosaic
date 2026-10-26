@@ -1,26 +1,41 @@
-from typing import ClassVar
+from typing import ClassVar, Literal, get_args
 
 import numpy as np
 
+Orientation = Literal["flat", "pointy"]
+
 
 class Hexagon:
-    _base_offsets: ClassVar[dict[float, np.ndarray]] = {}
+    _base_offsets: ClassVar[dict[tuple[float, Orientation], np.ndarray]] = {}
 
-    def __init__(self, cx: float, cy: float, size: float):
+    def __init__(self, cx: float, cy: float, size: float, orientation: Orientation = "flat"):
+
+        if orientation not in get_args(Orientation) :
+            raise ValueError(f"orientation must be 'flat' or 'pointy', received {orientation}.")
+
         self.cx = cx
         self.cy = cy
         self.size = size
+        self.orientation = orientation
 
         self.edges = self._compute_edges()
         self.color: tuple[int, int, int] | None = None
 
     @property
     def height(self):
-        return np.sqrt(3) * self.size
+
+        if self.orientation == "flat":
+            return np.sqrt(3) * self.size
+        else:
+            return 2 * self.size
 
     @property
     def width(self):
-        return 2 * self.size
+
+        if self.orientation == "flat":
+            return 2 * self.size
+        else:
+            return np.sqrt(3) * self.size
 
     @property
     def centre(self):
@@ -32,16 +47,20 @@ class Hexagon:
         Returns:
             np.ndarray: An array of shape (6, 2) containing the (x, y) coordinates of the edges.
         """
-        if self.size not in self.__class__._base_offsets:
-            angles_rad = np.radians(60 * np.arange(6))
+        key = (self.size, self.orientation)
+
+        if key not in self.__class__._base_offsets:
+            angle_offset = 0 if self.orientation == "flat" else 30
+            angles_rad = np.radians(60 * np.arange(6) + angle_offset)
 
             dx = self.size * np.cos(angles_rad)
             dy = self.size * np.sin(angles_rad)
 
-            self.__class__._base_offsets[self.size] = np.column_stack((dx, dy))
+            self.__class__._base_offsets[key] = np.column_stack((dx, dy))
 
-        offsets = self.__class__._base_offsets[self.size]
+        offsets = self.__class__._base_offsets[key]
         return offsets + [self.cx, self.cy]
+
 
     def contains_point(self, px: float, py: float) -> bool:
         """Check if a point is in the hexagon.
@@ -56,10 +75,14 @@ class Hexagon:
         relative_x = abs(px - self.cx)
         relative_y = abs(py - self.cy)
 
-        if relative_y > self.height / 2:
+        if self.orientation == "pointy":
+            relative_x, relative_y = relative_y, relative_x
+
+        if relative_y > np.sqrt(3) / 2 * self.size:
             return False
 
         return bool((np.sqrt(3) * relative_x + relative_y) <= (np.sqrt(3) * self.size))
+
 
     def _compute_average_color_random(
         self,
@@ -93,7 +116,7 @@ class Hexagon:
         while valid_points < num_samples and attempts < max_attempts:
             attempts += 1
 
-            dx = np.random.uniform(-self.size, self.size)
+            dx = np.random.uniform(-self.width / 2, self.width / 2)
             dy = np.random.uniform(-self.height / 2, self.height / 2)
 
             if self.contains_point(self.cx + dx, self.cy + dy):
@@ -120,8 +143,8 @@ class Hexagon:
         """
         img_height, img_width = img_arr.shape[:2]
 
-        x_min = int(max(0, np.floor(self.cx - self.size)))
-        x_max = int(min(img_width, np.ceil(self.cx + self.size)))
+        x_min = int(max(0, np.floor(self.cx - self.width / 2)))
+        x_max = int(min(img_width, np.ceil(self.cx + self.width / 2)))
         y_min = int(max(0, np.floor(self.cy - self.height / 2)))
         y_max = int(min(img_height, np.ceil(self.cy + self.height / 2)))
 
@@ -165,23 +188,28 @@ class Hexagon:
 
 
 def generate_hexagonal_grid(
-    width: int, height: int, size: float, margin: int = 2
+    width: int, height: int, size: float, margin: int = 2,orientation: Orientation = "flat"
 ) -> list[Hexagon]:
-    """Generate a flat-top hexagonal grid from a classic square grid.
+    """Generate an hexagonal (flat-top or pointy-top) grid from a classic square grid.
 
     Args:
         width (int): width of the square grid.
         height (int): height of the square grid.
-        size (float): size of the flat-top hexagon (radius of the outer circle).
+        size (float): size of the hexagon (radius of the outer circle).
         margin (int, optional):  Number of additional rows and columns
         added to the grid dimensions. Defaults to 2.
+        orientation (Orientation, optional): "flat" (flat-top) or "pointy" (pointy-top). Defaults to "flat".
 
     Returns:
         list[Hexagon]: the hexagonal grid
     """
 
-    x_spacing = 1.5 * size
-    y_spacing = np.sqrt(3) * size
+    if orientation == "flat":
+        x_spacing = 1.5 * size
+        y_spacing = np.sqrt(3) * size
+    else:
+        x_spacing = np.sqrt(3) * size
+        y_spacing = 1.5 * size
 
     cols = int(width / x_spacing) + margin
     rows = int(height / y_spacing) + margin
@@ -189,12 +217,15 @@ def generate_hexagonal_grid(
     hexagon_grid = []
 
     for col in range(cols):
-        y_offset = y_spacing / 2 if (col % 2 == 1) else 0
-
         for row in range(rows):
             cx = col * x_spacing
-            cy = row * y_spacing + y_offset
+            cy = row * y_spacing
 
-            hexagon_grid.append(Hexagon(cx, cy, size))
+            if orientation == "flat" and col % 2 == 1:
+                cy += y_spacing / 2
+            elif orientation == "pointy" and row % 2 == 1:
+                cx += x_spacing / 2
+
+            hexagon_grid.append(Hexagon(cx, cy, size, orientation))
 
     return hexagon_grid
