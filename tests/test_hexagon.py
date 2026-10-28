@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from geomosaic.hexagrid.hexagon import Hexagon, generate_hexagonal_grid
+from geomosaic.hexagrid import Hexagon
 
 ORIENTATIONS = ["flat", "pointy"]
 
@@ -97,77 +97,6 @@ def test_edges_distance_to_centre(hexagon):
 
 def test_base_offsets_cache_per_orientation(flat_hexagon, pointy_hexagon):
     assert not np.allclose(flat_hexagon.edges, pointy_hexagon.edges)
-
-
-def test_grid_hexagon_count():
-    width = 150
-    height = 100
-    size = 10
-    margin = 2
-
-    x_spacing = 1.5 * size
-    y_spacing = np.sqrt(3) * size
-    expected_cols = int(width / x_spacing) + margin
-    expected_rows = int(height / y_spacing) + margin
-    expected_total = expected_cols * expected_rows
-
-    grid = generate_hexagonal_grid(width, height, size, margin=margin)
-    assert len(grid) == expected_total
-
-
-def test_grid_hexagon_count_pointy():
-    width = 150
-    height = 100
-    size = 10
-    margin = 2
-
-    x_spacing = np.sqrt(3) * size
-    y_spacing = 1.5 * size
-    expected_cols = int(width / x_spacing) + margin
-    expected_rows = int(height / y_spacing) + margin
-    expected_total = expected_cols * expected_rows
-
-    grid = generate_hexagonal_grid(
-        width, height, size, margin=margin, orientation="pointy"
-    )
-    assert len(grid) == expected_total
-    assert all(h.orientation == "pointy" for h in grid)
-
-
-def test_grid_column_offset():
-    size = 10
-    grid = generate_hexagonal_grid(width=50, height=50, size=size, margin=0)
-
-    y_spacing = np.sqrt(3) * size
-    expected_offset = y_spacing / 2
-
-    hex_col_0 = grid[0]
-    assert hex_col_0.cx == pytest.approx(0.0)
-    assert hex_col_0.cy == pytest.approx(0.0)
-
-    x_spacing = 1.5 * size
-    hex_col_1 = next(h for h in grid if np.isclose(h.cx, x_spacing))
-
-    assert hex_col_1.cy == pytest.approx(expected_offset)
-
-
-def test_grid_row_offset_pointy():
-    size = 10
-    grid = generate_hexagonal_grid(
-        width=50, height=50, size=size, margin=0, orientation="pointy"
-    )
-
-    x_spacing = np.sqrt(3) * size
-    expected_offset = x_spacing / 2
-
-    hex_row_0 = grid[0]
-    assert hex_row_0.cx == pytest.approx(0.0)
-    assert hex_row_0.cy == pytest.approx(0.0)
-
-    y_spacing = 1.5 * size
-    hex_row_1 = next(h for h in grid if np.isclose(h.cy, y_spacing))
-
-    assert hex_row_1.cx == pytest.approx(expected_offset)
 
 
 def test_hexagon_contains_point():

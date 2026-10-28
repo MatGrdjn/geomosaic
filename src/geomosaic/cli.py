@@ -5,8 +5,7 @@ from typing import get_args
 import numpy as np
 from PIL import Image
 
-from geomosaic.hexagrid.hexagon import Orientation, generate_hexagonal_grid
-from geomosaic.svg import export_to_svg
+from geomosaic.hexagrid import HexagonalGrid, Orientation
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -127,24 +126,24 @@ def main() -> None:
 
     if verbose:
         print(f"Generating hexagonal grid ({args.orientation}-top)...")
-    hex_grid = generate_hexagonal_grid(
+    grid = HexagonalGrid(
         img.width,
         img.height,
         args.size,
         margin=args.margin,
         orientation=args.orientation,
     )
-    for h in hex_grid:
-        h.compute_color(
-            np.asarray(img),
-            method=args.color_sampling,
-            step=args.step,
-            sample_fraction=args.sample_fraction,
-        )
+
+    grid.compute_colors(
+        np.asarray(img),
+        method=args.color_sampling,
+        step=args.step,
+        sample_fraction=args.sample_fraction,
+    )
 
     if verbose:
         print("Exporting to SVG format...")
-    export_to_svg(hex_grid, img.width, img.height, output_path)
+    grid.to_svg(output_path)
 
     print("Done.")
 
