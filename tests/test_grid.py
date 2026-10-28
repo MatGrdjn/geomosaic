@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from geomosaic.hexagrid import Hexagon, HexagonalGrid
+from geomosaic.triagrid import Triangle, TriangularGrid
 
 
 @pytest.fixture
@@ -84,8 +85,9 @@ def test_grid_row_offset_pointy():
     assert hex_row_1.cx == pytest.approx(expected_offset)
 
 
-def test_compute_colors(red_image):
-    grid = HexagonalGrid(100, 100, 10)
+@pytest.mark.parametrize("grid_class", [HexagonalGrid, TriangularGrid])
+def test_compute_colors(grid_class, red_image):
+    grid = grid_class(100, 100, 10)
 
     grid.compute_colors(red_image)
 
@@ -95,8 +97,9 @@ def test_compute_colors(red_image):
     assert all(h.color == (255, 0, 0) for h in inside)
 
 
-def test_to_svg(tmp_path, red_image):
-    grid = HexagonalGrid(100, 100, 10)
+@pytest.mark.parametrize("grid_class", [HexagonalGrid, TriangularGrid])
+def test_to_svg(grid_class, tmp_path, red_image):
+    grid = grid_class(100, 100, 10)
     grid.compute_colors(red_image)
 
     output_file = tmp_path / "grid.svg"
@@ -105,3 +108,48 @@ def test_to_svg(tmp_path, red_image):
     content = output_file.read_text(encoding="utf-8")
     assert content.startswith("<svg")
     assert "<polygon" in content
+
+
+def test_triangular_grid_contains_triangles():
+    grid = TriangularGrid(150, 100, 10)
+
+    assert all(isinstance(t, Triangle) for t in grid)
+
+
+def test_grid_triangle_count():
+    width = 150
+    height = 100
+    size = 10
+    margin = 2
+
+    x_spacing = size / 2
+    y_spacing = np.sqrt(3) / 2 * size
+    expected_cols = int(width / x_spacing) + margin
+    expected_rows = int(height / y_spacing) + margin
+    expected_total = expected_cols * expected_rows
+
+    grid = TriangularGrid(width, height, size, margin=margin)
+    assert len(grid) == expected_total
+
+
+def test_grid_triangle_alternation():
+    size = 10
+    grid = TriangularGrid(width=50, height=50, size=size, margin=0)
+
+    x_spacing = size / 2
+    y_spacing = np.sqrt(3) / 2 * size
+
+    first = grid.shapes[0]
+    assert first.cx == pytest.approx(0.0)
+    assert first.cy == pytest.approx(0.0)
+    assert first.direction == "up"
+
+    right = next(
+        t for t in grid if np.isclose(t.cx, x_spacing) and np.isclose(t.cy, 0.0)
+    )
+    assert right.direction == "down"
+
+    below = next(
+        t for t in grid if np.isclose(t.cx, 0.0) and np.isclose(t.cy, y_spacing)
+    )
+    assert below.direction == "down"
