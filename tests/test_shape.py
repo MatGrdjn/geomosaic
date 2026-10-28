@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from geomosaic.hexagrid.hexagon import Hexagon
+from geomosaic.hexagrid import Hexagon
 from geomosaic.shape import Shape
 
 

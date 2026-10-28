@@ -1,4 +1,4 @@
-from geomosaic.hexagrid.hexagon import Hexagon
+from geomosaic.hexagrid import Hexagon
 from geomosaic.svg import export_to_svg
 
 
