@@ -5,7 +5,11 @@ from typing import get_args
 import numpy as np
 from PIL import Image
 
+from geomosaic.grid import Grid
 from geomosaic.hexagrid import HexagonalGrid, Orientation
+from geomosaic.triagrid import TriangularGrid
+
+SHAPES = ["hexagon", "triangle"]
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -26,11 +30,19 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--shape",
+        type=str,
+        choices=SHAPES,
+        default="hexagon",
+        help="Shape of the mosaic tiles (default: 'hexagon').",
+    )
+
+    parser.add_argument(
         "-s",
         "--size",
         type=float,
         default=15.0,
-        help="Size of the hexagon (default is 15.0).",
+        help="Side length of the shapes (default: 15.0).",
     )
 
     parser.add_argument(
@@ -42,7 +54,7 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose ouput."
+        "-v", "--verbose", action="store_true", help="Enable verbose output."
     )
 
     parser.add_argument(
@@ -71,19 +83,49 @@ def parse_arguments() -> argparse.Namespace:
         "--orientation",
         type=str,
         choices=get_args(Orientation),
-        default="flat",
-        help="Orientation of the hexagons: flat-top or pointy-top (default: 'flat')",
+        default=None,
+        help="Orientation of the hexagons: flat-top or pointy-top, "
+        "only with --shape hexagon (default: 'flat').",
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.shape != "hexagon" and args.orientation is not None:
+        parser.error("--orientation is only available with --shape hexagon.")
+
+    return args
+
+
+def build_grid(args: argparse.Namespace, width: int, height: int) -> Grid:
+    """Build the grid matching the shape chosen on the command line.
+
+    Args:
+        args (argparse.Namespace): The parsed command line arguments.
+        width (int): Width of the image.
+        height (int): Height of the image.
+
+    Returns:
+        Grid: The grid covering the image.
+    """
+    if args.shape == "hexagon":
+        return HexagonalGrid(
+            width,
+            height,
+            args.size,
+            margin=args.margin,
+            orientation=args.orientation or "flat",
+        )
+
+    return TriangularGrid(width, height, args.size, margin=args.margin)
 
 
 def main() -> None:
     """
-    Main entry point for the png2svg CLI tool.
+    Main entry point for the geomosaic CLI tool.
     """
 
     args = parse_arguments()
+    if args.orientation is None:
+        args.orientation = "flat"
 
     verbose = args.verbose
 
@@ -125,14 +167,11 @@ def main() -> None:
     img = Image.open(args.input).convert("RGB")
 
     if verbose:
-        print(f"Generating hexagonal grid ({args.orientation}-top)...")
-    grid = HexagonalGrid(
-        img.width,
-        img.height,
-        args.size,
-        margin=args.margin,
-        orientation=args.orientation,
-    )
+        print(
+            f"Generating {args.shape} grid"
+            + (f" ({args.orientation}-top)..." if args.shape == "hexagon" else "...")
+        )
+    grid = build_grid(args, img.width, img.height)
 
     grid.compute_colors(
         np.asarray(img),
