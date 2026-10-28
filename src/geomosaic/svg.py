@@ -1,16 +1,17 @@
+from collections.abc import Sequence
 from pathlib import Path
 
-from geomosaic.hexagrid.hexagon import Hexagon
+from geomosaic.shape import Shape
 
 
 def export_to_svg(
-    grid: list[Hexagon], width: int, height: int, output_path: str | Path
+    grid: Sequence[Shape], width: int, height: int, output_path: str | Path
 ) -> None:
     """
     Exports a grid of hexagons to an SVG file.
 
     Args:
-        grid (list[Hexagon]): List of Hexagon objects with colors.
+        grid (Sequence[Hexagon]): Sequence of Shape objects with colors.
         width (int): Width of the original image.
         height (int): Height of the original image.
         output_path (str | Path): Path where the .svg file will be saved.
