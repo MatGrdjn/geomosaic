@@ -1,6 +1,6 @@
 # /// script
 # dependencies = [
-#     "geomosaic==0.2.0",
+#     "geomosaic==0.3.0",
 #     "marimo>=0.25.1",
 #     "matplotlib==3.11.2",
 #     "numpy",
@@ -21,17 +21,18 @@ def _():
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from hexagrid.hexagon import generate_hexagonal_grid, Hexagon
-    from hexagrid.svg import export_to_svg
+    from geomosaic.hexagrid import HexagonalGrid
+    from geomosaic.triagrid import TriangularGrid
+    from pathlib import Path
     from PIL import Image
 
-    return Image, export_to_svg, generate_hexagonal_grid, io, mo, np
+    return HexagonalGrid, Image, Path, TriangularGrid, io, mo, np
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Hexagrid : Convert an image (.png, .jpg, etc.) into a SVG mosaic
+    # Geomosaic : Convert an image (.png, .jpg, etc.) into a SVG mosaic
 
     Drag and drop an image and adjust parameters to generate the vectorized mosaic.
     """)
@@ -43,6 +44,12 @@ def _(mo):
     file_picker = mo.ui.file(
         filetypes=[".png", ".jpg", ".jpeg", ".webp"],
         label="Choose an image to convert"
+    )
+
+    shape_picker = mo.ui.dropdown(
+        options=["hexagon", "triangle"],
+        value="hexagon",
+        label="Shape"
     )
 
     orientation_picker = mo.ui.dropdown(
@@ -76,14 +83,13 @@ def _(mo):
         start=0.05, stop=1.0, step=0.05, value=0.2,
         label="Color sampling fraction (Random color sampling)"
     )
-
-    mo.vstack([file_picker, orientation_picker, size_input, margin_input, method_picker, step_slider, fraction_slider])
     return (
         file_picker,
         fraction_slider,
         margin_input,
         method_picker,
         orientation_picker,
+        shape_picker,
         size_input,
         step_slider,
     )
@@ -91,17 +97,39 @@ def _(mo):
 
 @app.cell
 def _(
-    Image,
-    export_to_svg,
     file_picker,
     fraction_slider,
-    generate_hexagonal_grid,
+    margin_input,
+    method_picker,
+    mo,
+    orientation_picker,
+    shape_picker,
+    size_input,
+    step_slider,
+):
+    controls = [file_picker, shape_picker, size_input, margin_input, method_picker, step_slider, fraction_slider]
+    if shape_picker.value == "hexagon":
+        controls.append(orientation_picker)
+
+    mo.vstack(controls)
+    return
+
+
+@app.cell
+def _(
+    HexagonalGrid,
+    Image,
+    Path,
+    TriangularGrid,
+    file_picker,
+    fraction_slider,
     io,
     margin_input,
     method_picker,
     mo,
     np,
     orientation_picker,
+    shape_picker,
     size_input,
     step_slider,
 ):
@@ -110,18 +138,29 @@ def _(
 
         img = Image.open(io.BytesIO(uploaded_file.contents)).convert("RGB")
 
-        hex_grid = generate_hexagonal_grid(
+        if shape_picker.value == "hexagon":
+            grid = HexagonalGrid(
                 img.width, img.height, 
-                size_input.value, 
-                margin=int(margin_input.value),
+                size=size_input.value, 
+                margin=int(margin_input.value), 
                 orientation=orientation_picker.value
+            )
+        else:
+            grid = TriangularGrid(
+                img.width, img.height, 
+                size=size_input.value, 
+                margin=int(margin_input.value)
+            )
+
+        grid.compute_colors(
+            np.asarray(img), 
+            method=method_picker.value, 
+            step=int(step_slider.value), 
+            sample_fraction=fraction_slider.value
         )
 
-        for h in hex_grid:
-            h.compute_color(np.asarray(img), method=method_picker.value, step=int(step_slider.value), sample_fraction=fraction_slider.value)
-
         output_filename = f"output_{uploaded_file.name.rsplit('.', 1)[0]}.svg"
-        export_to_svg(hex_grid, img.width, img.height, output_filename)
+        grid.to_svg(output_filename)
 
         result = mo.hstack([
                 mo.vstack([
@@ -136,9 +175,16 @@ def _(
                     mo.md("**Result**"),
                     mo.md(f"""
                     * **Generated file:** `{output_filename}`
-                    * **Hexagons size:** {size_input.value}
-                    * **Hexagon number:** {len(hex_grid)}
-                    """)
+                    * **Shape:** {shape_picker.value}
+                    * **{shape_picker.value} side length:** {size_input.value}
+                    * **Number of {shape_picker.value}:** {len(grid)}
+                    """),
+                    mo.download(
+                        data=Path(output_filename).read_bytes(),
+                        filename=output_filename,
+                        mimetype="image/svg+xml",
+                        label="Download the SVG file."
+                    )
                 ])
         ])
 
